@@ -1,26 +1,29 @@
 package main
 
 import (
-	"github.com/gin-gonic/contrib/static"
+	"log"
+	"net/http"
+	"os"
+
 	"github.com/gin-gonic/gin"
+	_ "github.com/heroku/x/hmetrics/onload"
 )
 
 func main() {
-	r := gin.Default()
+	port := os.Getenv("PORT")
 
-	r.GET("/hello", func(c *gin.Context) {
-		c.String(200, "Hello, World!")
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.LoadHTMLGlob("templates/*.tmpl.html")
+	router.Static("/static", "static")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index.tmpl.html", nil)
 	})
 
-	api := r.Group("/api")
-
-	api.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
-	r.Use(static.Serve("/", static.LocalFile("./views", true)))
-
-	r.Run()
+	router.Run(":" + port)
 }
