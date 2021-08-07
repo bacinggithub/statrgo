@@ -1,26 +1,21 @@
 package main
 
-import (
-	"github.com/gin-gonic/contrib/static"
+import (			
 	"github.com/gin-gonic/gin"
+	_ "github.com/heroku/x/hmetrics/onload"
 )
 
-func main() {
-	r := gin.Default()
+func main() {	
 
-	r.GET("/hello", func(c *gin.Context) {
+	router := gin.New()
+	router.Use(gin.Logger())
+	router.LoadHTMLGlob("templates/*.tmpl.html")
+	router.Static("/static", "static")
+
+	router.GET("/hello", func(c *gin.Context) {
 		c.String(200, "Hello, World!")
 	})
 
-	api := r.Group("/api")
-
-	api.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-
-	r.Use(static.Serve("/", static.LocalFile("./views", true)))
-
-	r.Run()
+	router.Run()
+	
 }
